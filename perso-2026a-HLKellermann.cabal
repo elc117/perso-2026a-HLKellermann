@@ -82,4 +82,5 @@ executable perso-2026a-HLKellermann
     build-depends:
         scotty,
         base >=4.7 && <5,
-        wai-extra
+        wai-extra,
+        aeson
