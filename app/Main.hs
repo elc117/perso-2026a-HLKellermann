@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import Web.Scotty
+import Text.Printf (printf)
 import Data.Aeson (FromJSON, ToJSON)
 import Network.Wai.Middleware.RequestLogger (logStdoutDev)
 
@@ -37,9 +38,14 @@ converte valor expo = valor * (10 ** fromIntegral expo) -- ** pois ^ nao aceita 
 conversoes :: Double -> [(Int, String, String)] -> [(Double, String)]
 conversoes valor ordemDeGrandeza = [(converte valor e, s) | (e,s,_) <- ordemDeGrandeza]
 
+-- Arredonda as casas decimais apenas se o numero for maior que 1
+-- Se for menor(expoente era negativo), mantem o valor normal para poder visualizar quantas casas ele "andou pra frente"
+arredonda :: Double -> String
+arredonda valor = if (valor>=1) then printf "%.4f" valor else printf "%f" valor
+
 -- 'converte' passa para 'conversoes' o numero sem nenhum simbolo, e essa devolve uma lista das conversoes realizadas para cada ordem
-realizaFuncoes :: Double -> Int -> [(Double, String)]
-realizaFuncoes num expo = conversoes (converte num expo) ordemDeGrandeza
+realizaFuncoes :: Double -> Int -> [(String, String)]
+realizaFuncoes num expo = [(arredonda v, s) | (v, s) <- conversoes (converte num expo) ordemDeGrandeza]
 
 -- refatorar para receber dos dois modos o expoente:
 -- elevado a 'x'(int) OU receber o prefixo(char)
