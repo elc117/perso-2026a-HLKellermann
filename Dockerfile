@@ -9,10 +9,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY . .
 
-WORKDIR /app/src/06-scotty-sqlite
-
 RUN cabal update && \
-    cabal build && \
-    cp "$(cabal list-bin demo-scotty-sqlite)" /usr/local/bin/demo-scotty-sqlite
+    cabal build exe:perso-2026a-HLKellermann
 
-CMD ["demo-scotty-sqlite"]
+RUN cp "$(cabal list-bin exe:perso-2026a-HLKellermann)" /usr/local/bin/app
+
+ENV PORT=10000
+
+EXPOSE 10000
+
+CMD ["app"]

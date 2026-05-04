@@ -1,5 +1,5 @@
 services:
-  - name: demo-scotty-codespace-2026a
+  - name: perso-2026a-HLKellermann
     type: web
     runtime: docker
     plan: free
@@ -11,7 +11,9 @@ services:
       paths:
         - Dockerfile
         - render.yaml
-        - src/**
+        - app/**
+        - perso-2026a-HLKellermann.cabal
       ignoredPaths:
         - README.md
         - assets/**
+        - dist-newstyle/**

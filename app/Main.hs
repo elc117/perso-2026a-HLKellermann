@@ -51,7 +51,11 @@ realizaFuncoes num expo = [(formataDec v, s) | (v, s) <- conversoes (converte nu
 
 
 main :: IO()
-main = scotty 3000 $ do
+main = do
+    portStr <- getEnv "PORT"
+    let port = read portStr :: Int
+
+    scotty port $ do
     middleware logStdoutDev
 
     get "/:numero/:expoente" $ do
