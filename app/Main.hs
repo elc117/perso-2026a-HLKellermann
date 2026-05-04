@@ -1,6 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import Web.Scotty
+import qualified Data.Text as T
+import Data.Scientific (Scientific, scientific, formatScientific, FPFormat(Fixed), fromFloatDigits)
 import Text.Printf (printf)
 import Data.Aeson (FromJSON, ToJSON)
 import Network.Wai.Middleware.RequestLogger (logStdoutDev)
@@ -29,32 +31,31 @@ ordemDeGrandeza =
    (-24, "y", "iocto")]
 
 
--- Converte entre grandezas
-converte :: Double -> Int -> Double
-converte valor expo = valor * (10 ** fromIntegral expo) -- ** pois ^ nao aceita negativo
+-- Converte entre grandezas. 'scientific' faz 1 * 10^expoente (1 porque ja eh na base 10)
+converte :: Scientific -> Int -> Scientific
+converte valor expo = valor * scientific 1 expo
 
 -- Devolve uma lista de tupla conseguida atraves de list compreension, cada tupla eh uma conversao e seu simbolo
 --tupla 'recebe' o valor resultante da funcao 'converte' e o simbolo 's'. O expoente e o simbolo vem da tupla 'atual' da ordemDeGrandeza, repete-se
-conversoes :: Double -> [(Int, String, String)] -> [(Double, String)]
+conversoes :: Scientific -> [(Int, String, String)] -> [(Scientific, String)]
 conversoes valor ordemDeGrandeza = [(converte valor e, s) | (e,s,_) <- ordemDeGrandeza]
 
 -- Arredonda as casas decimais apenas se o numero for maior que 1
 -- Se for menor(expoente era negativo), mantem o valor normal para poder visualizar quantas casas ele "andou pra frente"
-arredonda :: Double -> String
-arredonda valor = if (valor>=1) then printf "%.4f" valor else printf "%f" valor
+formataDec :: Scientific -> String
+formataDec = formatScientific Fixed (Just 5)
 
 -- 'converte' passa para 'conversoes' o numero sem nenhum simbolo, e essa devolve uma lista das conversoes realizadas para cada ordem
-realizaFuncoes :: Double -> Int -> [(String, String)]
-realizaFuncoes num expo = [(arredonda v, s) | (v, s) <- conversoes (converte num expo) ordemDeGrandeza]
+realizaFuncoes :: Scientific -> Int -> [(String, String)]
+realizaFuncoes num expo = [(formataDec v, s) | (v, s) <- conversoes (converte num expo) ordemDeGrandeza]
 
--- refatorar para receber dos dois modos o expoente:
--- elevado a 'x'(int) OU receber o prefixo(char)
 
 main :: IO()
 main = scotty 3000 $ do
     middleware logStdoutDev
 
     get "/:numero/:expoente" $ do
-        numero <- pathParam "numero"
-        expoente <- pathParam "expoente"
+        numDouble <- pathParam "numero" :: ActionM Double
+        expoente <- pathParam "expoente" :: ActionM Int
+        let numero = fromFloatDigits numDouble
         json (realizaFuncoes numero expoente)
