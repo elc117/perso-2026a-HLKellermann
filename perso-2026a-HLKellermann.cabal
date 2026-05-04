@@ -83,4 +83,5 @@ executable perso-2026a-HLKellermann
         scotty,
         base >=4.7 && <5,
         wai-extra,
-        aeson
+        aeson,
+        scientific
